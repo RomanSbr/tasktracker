@@ -3,13 +3,13 @@ import type { LoginCredentials, RegisterData, TokenResponse, User } from '@/type
 
 export const authApi = {
   async login(credentials: LoginCredentials): Promise<TokenResponse> {
-    const formData = new FormData()
-    formData.append('username', credentials.username)
-    formData.append('password', credentials.password)
+    const params = new URLSearchParams()
+    params.append('username', credentials.username)
+    params.append('password', credentials.password)
 
-    const { data } = await apiClient.post<TokenResponse>('/auth/login', formData, {
+    const { data } = await apiClient.post<TokenResponse>('/auth/login', params, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
     })
     return data
