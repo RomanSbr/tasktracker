@@ -1,14 +1,14 @@
 """Script to create admin user"""
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.session import async_session_maker
+from app.db.session import AsyncSessionLocal
 from app.crud.user import user as crud_user
 from app.schemas.user import UserCreate
 
 
 async def create_admin():
     """Create admin user"""
-    async with async_session_maker() as db:
+    async with AsyncSessionLocal() as db:
         # Admin credentials
         admin_data = UserCreate(
             email="admin@tasktracker.com",
