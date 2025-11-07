@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import AsyncSessionLocal
 from app.crud.user import user as crud_user
 from app.schemas.user import UserCreate
+# Import all models to avoid relationship errors
+from app.db import base
 
 
 async def create_admin():
