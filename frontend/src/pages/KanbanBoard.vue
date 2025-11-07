@@ -10,13 +10,13 @@
           <p class="text-gray-600">{{ projectsStore.currentProject?.key }}</p>
         </div>
         <button @click="showCreateTaskModal = true" class="btn btn-primary">
-          Create Task
+          Создать задачу
         </button>
       </div>
 
       <!-- Kanban Board -->
       <div v-if="tasksStore.loading" class="text-center py-12">
-        <div class="text-gray-500">Loading tasks...</div>
+        <div class="text-gray-500">Загрузка задач...</div>
       </div>
 
       <div v-else class="flex space-x-4 overflow-x-auto pb-4">
@@ -90,7 +90,7 @@
                     @click="viewTask(task.id)"
                     class="text-xs text-success-600 hover:text-success-700"
                   >
-                    View
+                    Открыть
                   </button>
                 </div>
               </div>
@@ -99,7 +99,7 @@
                 v-if="!tasksStore.tasksByStatus[status.value]?.length"
                 class="text-center py-8 text-gray-400 text-sm"
               >
-                Drop tasks here
+                Перетащите задачи сюда
               </div>
             </div>
           </div>
@@ -109,40 +109,40 @@
       <!-- Create Task Modal -->
       <div v-if="showCreateTaskModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <h2 class="text-xl font-bold mb-4">Create Task</h2>
+          <h2 class="text-xl font-bold mb-4">Создать задачу</h2>
           <div class="space-y-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-              <input v-model="newTask.title" type="text" class="input" placeholder="Task title" />
+              <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
+              <input v-model="newTask.title" type="text" class="input" placeholder="Название задачи" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
               <textarea v-model="newTask.description" class="input" rows="4"></textarea>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Приоритет</label>
                 <select v-model="newTask.priority" class="input">
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                  <option value="critical">Critical</option>
+                  <option value="low">Низкий</option>
+                  <option value="medium">Средний</option>
+                  <option value="high">Высокий</option>
+                  <option value="critical">Критический</option>
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Тип</label>
                 <select v-model="newTask.type" class="input">
-                  <option value="task">Task</option>
-                  <option value="bug">Bug</option>
-                  <option value="feature">Feature</option>
-                  <option value="improvement">Improvement</option>
+                  <option value="task">Задача</option>
+                  <option value="bug">Ошибка</option>
+                  <option value="feature">Новая функция</option>
+                  <option value="improvement">Улучшение</option>
                 </select>
               </div>
             </div>
           </div>
           <div class="mt-6 flex justify-end space-x-3">
-            <button @click="showCreateTaskModal = false" class="btn btn-secondary">Cancel</button>
-            <button @click="createTask" class="btn btn-primary">Create</button>
+            <button @click="showCreateTaskModal = false" class="btn btn-secondary">Отмена</button>
+            <button @click="createTask" class="btn btn-primary">Создать</button>
           </div>
         </div>
       </div>
@@ -174,12 +174,12 @@ const newTask = ref({
 })
 
 const statuses = [
-  { value: 'backlog', label: 'Backlog', color: 'bg-gray-400' },
-  { value: 'todo', label: 'To Do', color: 'bg-blue-400' },
-  { value: 'in_progress', label: 'In Progress', color: 'bg-yellow-400' },
-  { value: 'review', label: 'Review', color: 'bg-purple-400' },
-  { value: 'testing', label: 'Testing', color: 'bg-orange-400' },
-  { value: 'done', label: 'Done', color: 'bg-success-500' },
+  { value: 'backlog', label: 'Бэклог', color: 'bg-gray-400' },
+  { value: 'todo', label: 'К выполнению', color: 'bg-blue-400' },
+  { value: 'in_progress', label: 'В работе', color: 'bg-yellow-400' },
+  { value: 'review', label: 'На проверке', color: 'bg-purple-400' },
+  { value: 'testing', label: 'Тестирование', color: 'bg-orange-400' },
+  { value: 'done', label: 'Выполнено', color: 'bg-success-500' },
 ]
 
 let draggedTask: Task | null = null

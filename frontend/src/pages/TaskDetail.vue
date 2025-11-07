@@ -2,7 +2,7 @@
   <AppLayout>
     <div class="space-y-6">
       <div v-if="tasksStore.loading" class="text-center py-12">
-        <div class="text-gray-500">Loading task...</div>
+        <div class="text-gray-500">Загрузка задачи...</div>
       </div>
       <div v-else-if="tasksStore.currentTask" class="max-w-4xl">
         <div class="mb-4">
@@ -10,7 +10,7 @@
             :to="`/projects/${tasksStore.currentTask.project_id}/board`"
             class="text-success-600 hover:text-success-700 text-sm"
           >
-            ← Back to Board
+            ← Вернуться к доске
           </router-link>
         </div>
 
@@ -50,51 +50,51 @@
                   @change="updateStatus"
                   class="input text-sm"
                 >
-                  <option value="backlog">Backlog</option>
-                  <option value="todo">To Do</option>
-                  <option value="in_progress">In Progress</option>
-                  <option value="review">Review</option>
-                  <option value="testing">Testing</option>
-                  <option value="done">Done</option>
+                  <option value="backlog">Бэклог</option>
+                  <option value="todo">К выполнению</option>
+                  <option value="in_progress">В работе</option>
+                  <option value="review">На проверке</option>
+                  <option value="testing">Тестирование</option>
+                  <option value="done">Выполнено</option>
                 </select>
               </div>
             </div>
 
             <div class="prose max-w-none">
-              <h3 class="text-sm font-medium text-gray-500 mb-2">Description</h3>
+              <h3 class="text-sm font-medium text-gray-500 mb-2">Описание</h3>
               <p class="text-gray-900">
-                {{ tasksStore.currentTask.description || 'No description provided' }}
+                {{ tasksStore.currentTask.description || 'Описание отсутствует' }}
               </p>
             </div>
 
             <div class="mt-6 grid grid-cols-2 gap-6">
               <div>
-                <h3 class="text-sm font-medium text-gray-500 mb-2">Details</h3>
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Детали</h3>
                 <dl class="space-y-2">
                   <div class="flex justify-between">
-                    <dt class="text-sm text-gray-600">Created</dt>
+                    <dt class="text-sm text-gray-600">Создана</dt>
                     <dd class="text-sm text-gray-900">{{ formatDate(tasksStore.currentTask.created_at) }}</dd>
                   </div>
                   <div v-if="tasksStore.currentTask.updated_at" class="flex justify-between">
-                    <dt class="text-sm text-gray-600">Updated</dt>
+                    <dt class="text-sm text-gray-600">Обновлена</dt>
                     <dd class="text-sm text-gray-900">{{ formatDate(tasksStore.currentTask.updated_at) }}</dd>
                   </div>
                   <div v-if="tasksStore.currentTask.due_date" class="flex justify-between">
-                    <dt class="text-sm text-gray-600">Due Date</dt>
+                    <dt class="text-sm text-gray-600">Срок выполнения</dt>
                     <dd class="text-sm text-gray-900">{{ formatDate(tasksStore.currentTask.due_date) }}</dd>
                   </div>
                 </dl>
               </div>
               <div>
-                <h3 class="text-sm font-medium text-gray-500 mb-2">Estimates</h3>
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Оценка</h3>
                 <dl class="space-y-2">
                   <div v-if="tasksStore.currentTask.estimated_hours" class="flex justify-between">
-                    <dt class="text-sm text-gray-600">Estimated</dt>
-                    <dd class="text-sm text-gray-900">{{ tasksStore.currentTask.estimated_hours }}h</dd>
+                    <dt class="text-sm text-gray-600">Оценка</dt>
+                    <dd class="text-sm text-gray-900">{{ tasksStore.currentTask.estimated_hours }}ч</dd>
                   </div>
                   <div class="flex justify-between">
-                    <dt class="text-sm text-gray-600">Logged</dt>
-                    <dd class="text-sm text-gray-900">{{ tasksStore.currentTask.logged_hours }}h</dd>
+                    <dt class="text-sm text-gray-600">Затрачено</dt>
+                    <dd class="text-sm text-gray-900">{{ tasksStore.currentTask.logged_hours }}ч</dd>
                   </div>
                   <div v-if="tasksStore.currentTask.story_points" class="flex justify-between">
                     <dt class="text-sm text-gray-600">Story Points</dt>

@@ -2,8 +2,8 @@
   <AppLayout>
     <div class="space-y-6">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p class="mt-2 text-gray-600">Welcome back, {{ authStore.user?.username }}!</p>
+        <h1 class="text-3xl font-bold text-gray-900">Главная</h1>
+        <p class="mt-2 text-gray-600">Добро пожаловать, {{ authStore.user?.username }}!</p>
       </div>
 
       <!-- Stats Grid -->
@@ -12,7 +12,7 @@
           <div class="card-body">
             <div class="flex items-center">
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-500">Total Projects</div>
+                <div class="text-sm font-medium text-gray-500">Всего проектов</div>
                 <div class="mt-1 text-3xl font-semibold text-gray-900">
                   {{ projectsStore.projects.length }}
                 </div>
@@ -30,7 +30,7 @@
           <div class="card-body">
             <div class="flex items-center">
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-500">Total Tasks</div>
+                <div class="text-sm font-medium text-gray-500">Всего задач</div>
                 <div class="mt-1 text-3xl font-semibold text-gray-900">
                   {{ tasksStore.tasks.length }}
                 </div>
@@ -48,7 +48,7 @@
           <div class="card-body">
             <div class="flex items-center">
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-500">In Progress</div>
+                <div class="text-sm font-medium text-gray-500">В работе</div>
                 <div class="mt-1 text-3xl font-semibold text-gray-900">
                   {{ tasksStore.tasksByStatus.in_progress.length }}
                 </div>
@@ -66,7 +66,7 @@
           <div class="card-body">
             <div class="flex items-center">
               <div class="flex-1">
-                <div class="text-sm font-medium text-gray-500">Completed</div>
+                <div class="text-sm font-medium text-gray-500">Завершено</div>
                 <div class="mt-1 text-3xl font-semibold text-gray-900">
                   {{ tasksStore.tasksByStatus.done.length }}
                 </div>
@@ -84,16 +84,16 @@
       <!-- Recent Projects -->
       <div class="card">
         <div class="card-header">
-          <h2 class="text-lg font-semibold text-gray-900">Recent Projects</h2>
+          <h2 class="text-lg font-semibold text-gray-900">Недавние проекты</h2>
         </div>
         <div class="card-body">
           <div v-if="projectsStore.loading" class="text-center py-8">
-            <div class="text-gray-500">Loading...</div>
+            <div class="text-gray-500">Загрузка...</div>
           </div>
           <div v-else-if="projectsStore.projects.length === 0" class="text-center py-8">
-            <p class="text-gray-500">No projects yet</p>
+            <p class="text-gray-500">Проектов пока нет</p>
             <router-link to="/projects" class="mt-4 btn btn-primary inline-block">
-              Create Project
+              Создать проект
             </router-link>
           </div>
           <div v-else class="space-y-4">
@@ -110,7 +110,7 @@
                 :to="`/projects/${project.id}/board`"
                 class="btn btn-secondary btn-sm"
               >
-                View Board
+                Открыть доску
               </router-link>
             </div>
           </div>

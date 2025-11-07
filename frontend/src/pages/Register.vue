@@ -6,7 +6,7 @@
           Task<span class="text-success-600">Tracker</span>
         </h2>
         <p class="mt-2 text-center text-sm text-gray-600">
-          Create your account
+          Создайте свой аккаунт
         </p>
       </div>
       <form class="mt-8 space-y-6" @submit.prevent="handleRegister">
@@ -24,7 +24,7 @@
             />
           </div>
           <div>
-            <label for="username" class="sr-only">Username</label>
+            <label for="username" class="sr-only">Имя пользователя</label>
             <input
               id="username"
               v-model="userData.username"
@@ -32,11 +32,11 @@
               type="text"
               required
               class="input"
-              placeholder="Username"
+              placeholder="Имя пользователя"
             />
           </div>
           <div>
-            <label for="password" class="sr-only">Password</label>
+            <label for="password" class="sr-only">Пароль</label>
             <input
               id="password"
               v-model="userData.password"
@@ -44,30 +44,30 @@
               type="password"
               required
               class="input"
-              placeholder="Password (min 8 chars, 1 uppercase, 1 number)"
+              placeholder="Пароль (мин. 8 символов, 1 заглавная, 1 цифра)"
             />
           </div>
           <div class="grid grid-cols-2 gap-4">
             <div>
-              <label for="first_name" class="sr-only">First Name</label>
+              <label for="first_name" class="sr-only">Имя</label>
               <input
                 id="first_name"
                 v-model="userData.first_name"
                 name="first_name"
                 type="text"
                 class="input"
-                placeholder="First Name (optional)"
+                placeholder="Имя (необязательно)"
               />
             </div>
             <div>
-              <label for="last_name" class="sr-only">Last Name</label>
+              <label for="last_name" class="sr-only">Фамилия</label>
               <input
                 id="last_name"
                 v-model="userData.last_name"
                 name="last_name"
                 type="text"
                 class="input"
-                placeholder="Last Name (optional)"
+                placeholder="Фамилия (необязательно)"
               />
             </div>
           </div>
@@ -83,14 +83,14 @@
             :disabled="authStore.loading"
             class="btn btn-primary w-full"
           >
-            {{ authStore.loading ? 'Creating account...' : 'Sign up' }}
+            {{ authStore.loading ? 'Создание аккаунта...' : 'Зарегистрироваться' }}
           </button>
         </div>
 
         <div class="text-center text-sm">
-          <span class="text-gray-600">Already have an account? </span>
+          <span class="text-gray-600">Уже есть аккаунт? </span>
           <router-link to="/login" class="text-success-600 hover:text-success-500">
-            Sign in
+            Войти
           </router-link>
         </div>
       </form>
