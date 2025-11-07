@@ -5,6 +5,7 @@ from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
+import bcrypt
 
 from app.core.config import settings
 
@@ -34,16 +35,19 @@ def create_refresh_token(subject: Union[str, Any]) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify password against hash"""
-    # Truncate to 72 bytes for bcrypt compatibility
-    truncated_password = plain_password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.verify(truncated_password, hashed_password)
+    # Use bcrypt directly to handle password truncation properly
+    password_bytes = plain_password.encode('utf-8')[:72]
+    hash_bytes = hashed_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hash_bytes)
 
 
 def get_password_hash(password: str) -> str:
     """Hash password"""
-    # Truncate to 72 bytes for bcrypt compatibility
-    truncated_password = password.encode('utf-8')[:72].decode('utf-8', errors='ignore')
-    return pwd_context.hash(truncated_password)
+    # Use bcrypt directly to handle password truncation properly
+    password_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password_bytes, salt)
+    return hashed.decode('utf-8')
 
 
 def decode_token(token: str) -> dict:
