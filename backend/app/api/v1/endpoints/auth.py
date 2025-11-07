@@ -56,7 +56,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not crud_user.is_active(user):
+    if not await crud_user.is_active(user):
         raise HTTPException(status_code=400, detail="Inactive user")
 
     # Update last login
