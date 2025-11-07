@@ -71,7 +71,7 @@ class TaskHistory(Base):
     field_name = Column(String(100))
     old_value = Column(Text)
     new_value = Column(Text)
-    metadata = Column(JSONB, default={})
+    extra_metadata = Column(JSONB, default={})
 
     created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
 
