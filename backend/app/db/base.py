@@ -7,6 +7,8 @@ from app.models.task import Task, TaskHistory, TaskDependency
 from app.models.comment import Comment
 from app.models.sprint import Sprint
 from app.models.attachment import Attachment
+from app.models.workflow import Workflow, WorkflowStatus, WorkflowTransition
+from app.models.permission import PermissionScheme, PermissionSchemeRule
 
 # Association tables
 from app.models.associations import (

@@ -1,10 +1,11 @@
-from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Date, Numeric
+from sqlalchemy import Column, String, Text, ForeignKey, DateTime, Date, Numeric, Integer
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 import uuid
 
 from app.db.session import Base
+from app.models.associations import project_members
 
 
 class Project(Base):
@@ -21,6 +22,10 @@ class Project(Base):
     budget = Column(Numeric(15, 2))
     settings = Column(JSONB, default={})
     created_by = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    lead_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
+    workflow_id = Column(UUID(as_uuid=True), ForeignKey("workflows.id"))
+    permission_scheme_id = Column(UUID(as_uuid=True), ForeignKey("permission_schemes.id"))
+    key_sequence = Column(Integer, nullable=False, default=0)
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -30,6 +35,15 @@ class Project(Base):
 
     # Relationships
     organization = relationship("Organization", back_populates="projects")
-    members = relationship("User", secondary="project_members", back_populates="projects")
+    members = relationship(
+        "User",
+        secondary=project_members,
+        back_populates="projects",
+        primaryjoin=id == project_members.c.project_id,
+        secondaryjoin="User.id == project_members.c.user_id",
+    )
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")
     sprints = relationship("Sprint", back_populates="project", cascade="all, delete-orphan")
+    lead = relationship("User", foreign_keys=[lead_id])
+    workflow = relationship("Workflow", back_populates="projects")
+    permission_scheme = relationship("PermissionScheme", back_populates="projects")

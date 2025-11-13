@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api.v1.api import api_router
 from app.db.session import engine
-from app.db.base import Base
+from app.services.bootstrap import ensure_default_admin
 
 
 @asynccontextmanager
@@ -14,10 +14,15 @@ async def lifespan(app: FastAPI):
     """Lifespan events"""
     # Startup
     print("🚀 Starting Task Tracker API...")
-    async with engine.begin() as conn:
-        # Create tables (in production use Alembic)
-        await conn.run_sync(Base.metadata.create_all)
-    print("✅ Database tables created")
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(lambda _: None)
+        print("✅ Database connection established")
+        await ensure_default_admin()
+        print("👑 Default admin ensured")
+    except Exception as exc:
+        print("❌ Failed to connect to database:", exc)
+        raise
     yield
     # Shutdown
     print("🛑 Shutting down...")

@@ -5,6 +5,7 @@ from sqlalchemy.sql import func
 import uuid
 
 from app.db.session import Base
+from app.models.associations import project_members
 
 
 class User(Base):
@@ -31,7 +32,13 @@ class User(Base):
     # Relationships
     owned_organizations = relationship("Organization", back_populates="owner", foreign_keys="Organization.owner_id")
     organizations = relationship("Organization", secondary="user_organizations", back_populates="members")
-    projects = relationship("Project", secondary="project_members", back_populates="members")
+    projects = relationship(
+        "Project",
+        secondary=project_members,
+        back_populates="members",
+        primaryjoin=id == project_members.c.user_id,
+        secondaryjoin="Project.id == project_members.c.project_id",
+    )
     assigned_tasks = relationship("Task", back_populates="assignee", foreign_keys="Task.assignee_id")
     reported_tasks = relationship("Task", back_populates="reporter", foreign_keys="Task.reporter_id")
     watched_tasks = relationship("Task", secondary="task_watchers", back_populates="watchers")

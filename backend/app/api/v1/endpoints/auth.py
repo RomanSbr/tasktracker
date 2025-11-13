@@ -6,8 +6,9 @@ from datetime import datetime
 from app.api.deps import get_db, get_current_user
 from app.crud.user import user as crud_user
 from app.schemas.user import UserCreate, UserResponse, Token
-from app.core.security import create_access_token, create_refresh_token
+from app.core.security import create_access_token, create_refresh_token, decode_token
 from app.models.user import User
+from pydantic import BaseModel
 
 router = APIRouter()
 
@@ -80,6 +81,53 @@ async def get_current_user_info(
 ):
     """Get current user info"""
     return current_user
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str
+
+
+@router.post("/refresh", response_model=Token)
+async def refresh_token(
+    request: RefreshTokenRequest,
+    db: AsyncSession = Depends(get_db)
+):
+    """Refresh access token using refresh token"""
+    try:
+        payload = decode_token(request.refresh_token, expected_type="refresh")
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid refresh token",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user = await crud_user.get(db, id=user_id)
+        if user is None or not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User not found or inactive",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        # Create new tokens
+        new_access_token = create_access_token(subject=str(user.id))
+        new_refresh_token = create_refresh_token(subject=str(user.id))
+
+        return {
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "token_type": "bearer"
+        }
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @router.post("/logout")

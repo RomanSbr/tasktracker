@@ -46,6 +46,14 @@ docker-compose up -d && docker-compose exec backend alembic upgrade head
 
 Then visit **http://localhost:3000**
 
+### Default Admin
+
+- Email: `admin@example.com`
+- Username: `admin`
+- Password: `Admin123!`
+
+Учётка создаётся автоматически при старте backend (значения можно переопределить через переменные `DEFAULT_ADMIN_*` в `backend/.env`).
+
 ### Using Makefile
 
 ```bash
@@ -119,6 +127,9 @@ tasktracker/
 - **Quick Start**: [QUICKSTART.md](QUICKSTART.md) - Get started in 5 minutes
 - **Deployment**: [DEPLOYMENT.md](DEPLOYMENT.md) - Production deployment guide
 - **API Docs**: http://localhost:8000/api/v1/docs - Interactive API documentation
+- **Jira Parity Plan**: [PROJECT_PLAN.md](PROJECT_PLAN.md) - дорожная карта по приведению продукта к функционалу Jira
+- **Current State**: [PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md) - фактическое состояние и ограничения
+- **RBAC Spec**: [docs/RBAC_SPEC.md](docs/RBAC_SPEC.md) - дизайн многоарендности и прав
 
 ## Available Scripts
 
@@ -175,6 +186,7 @@ npm test
 ✅ Docker Deployment
 ✅ Database Migrations
 ✅ API Documentation
+✅ Organizations & basic RBAC scaffolding (expanded workflows/permissions in progress)
 
 ## Tech Highlights
 

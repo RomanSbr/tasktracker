@@ -1,14 +1,41 @@
 <template>
   <AppLayout>
     <div class="space-y-6">
-      <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-bold text-gray-900">Проекты</h1>
-        <button @click="showCreateModal = true" class="btn btn-primary">
-          Создать проект
+      <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Проекты</h1>
+          <p class="text-gray-500" v-if="organizationsStore.currentOrganization">
+            {{ organizationsStore.currentOrganization.name }}
+          </p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button @click="showCreateOrgModal = true" class="btn btn-secondary">
+            Новый workspace
+          </button>
+          <button @click="openProjectModal" class="btn btn-primary" :disabled="!organizationsStore.currentOrganization">
+            Создать проект
+          </button>
+        </div>
+      </div>
+
+      <div v-if="organizationsStore.loading" class="text-center py-12 text-gray-500">
+        Загрузка рабочих областей...
+      </div>
+
+      <div
+        v-else-if="!organizationsStore.organizations.length"
+        class="text-center py-16 border border-dashed border-gray-300 rounded-xl bg-white"
+      >
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Рабочие области отсутствуют</h2>
+        <p class="text-gray-500 mb-6 max-w-xl mx-auto">
+          Создайте организацию, чтобы начать вести проекты и задачи. Каждый workspace хранит свои проекты, участников и настройки.
+        </p>
+        <button class="btn btn-primary" @click="showCreateOrgModal = true">
+          Создать workspace
         </button>
       </div>
 
-      <div v-if="projectsStore.loading" class="text-center py-12">
+      <div v-else-if="projectsStore.loading" class="text-center py-12">
         <div class="text-gray-500">Загрузка проектов...</div>
       </div>
 
@@ -49,12 +76,19 @@
         </div>
       </div>
 
-      <!-- Create Project Modal (simplified for now) -->
+      <!-- Create Project Modal -->
       <div v-if="showCreateModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div class="bg-white rounded-lg p-6 max-w-md w-full">
           <h2 class="text-xl font-bold mb-4">Создать проект</h2>
           <div class="space-y-4">
-            <div>
+            <div v-if="organizationsStore.currentOrganization">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Рабочая область</label>
+              <p class="text-sm text-gray-600">{{ organizationsStore.currentOrganization.name }}</p>
+            </div>
+            <div v-else class="text-sm text-danger-600">
+              Нет выбранной рабочей области
+            </div>
+            <div class="mt-4">
               <label class="block text-sm font-medium text-gray-700 mb-1">Название проекта</label>
               <input v-model="newProject.name" type="text" class="input" placeholder="Мой проект" />
             </div>
@@ -73,40 +107,141 @@
           </div>
         </div>
       </div>
+
+      <!-- Create Organization Modal -->
+      <div v-if="showCreateOrgModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full">
+          <h2 class="text-xl font-bold mb-4">Новая рабочая область</h2>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Название</label>
+              <input v-model="newOrganization.name" type="text" class="input" placeholder="Product Team" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
+              <input v-model="newOrganization.slug" type="text" class="input" placeholder="product-team" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Описание</label>
+              <textarea v-model="newOrganization.description" class="input" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="mt-6 flex justify-end space-x-3">
+            <button @click="showCreateOrgModal = false" class="btn btn-secondary">Отмена</button>
+            <button @click="createOrganization" class="btn btn-primary">Создать</button>
+          </div>
+        </div>
+      </div>
     </div>
   </AppLayout>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import AppLayout from '@/components/layout/AppLayout.vue'
 import { useProjectsStore } from '@/stores/projects'
+import { useOrganizationsStore } from '@/stores/organizations'
+import { useNotificationsStore } from '@/stores/notifications'
 
 const projectsStore = useProjectsStore()
+const organizationsStore = useOrganizationsStore()
+const notificationsStore = useNotificationsStore()
 const showCreateModal = ref(false)
+const showCreateOrgModal = ref(false)
 const newProject = ref({
   name: '',
   key: '',
   description: '',
-  organization_id: '00000000-0000-0000-0000-000000000001' // Default org ID for demo
+  organization_id: ''
+})
+const newOrganization = ref({
+  name: '',
+  slug: '',
+  description: ''
 })
 
+const initData = async () => {
+  await organizationsStore.fetchOrganizations()
+  if (organizationsStore.currentOrganization?.id) {
+    newProject.value.organization_id = organizationsStore.currentOrganization.id
+    projectsStore.fetchProjects(organizationsStore.currentOrganization.id)
+  }
+}
+
 onMounted(() => {
-  projectsStore.fetchProjects()
+  initData()
 })
+
+watch(
+  () => organizationsStore.currentOrganization?.id,
+  (newId) => {
+    if (newId) {
+      newProject.value.organization_id = newId
+      projectsStore.fetchProjects(newId)
+    }
+  }
+)
+
+const openProjectModal = () => {
+  if (!organizationsStore.currentOrganization) {
+    showCreateOrgModal.value = true
+    return
+  }
+  showCreateModal.value = true
+}
 
 const createProject = async () => {
   try {
+    if (!newProject.value.name.trim()) {
+      notificationsStore.error('Введите название проекта')
+      return
+    }
+    if (!newProject.value.key.trim()) {
+      notificationsStore.error('Введите ключ проекта')
+      return
+    }
+    if (!newProject.value.organization_id) {
+      notificationsStore.error('Выберите рабочую область')
+      return
+    }
+
     await projectsStore.createProject(newProject.value)
+    notificationsStore.success('Проект успешно создан')
     showCreateModal.value = false
     newProject.value = {
       name: '',
       key: '',
       description: '',
-      organization_id: '00000000-0000-0000-0000-000000000001'
+      organization_id: organizationsStore.currentOrganization?.id || ''
     }
-  } catch (error) {
+  } catch (error: any) {
+    notificationsStore.error(error.message || 'Не удалось создать проект')
     console.error('Failed to create project:', error)
+  }
+}
+
+const createOrganization = async () => {
+  try {
+    if (!newOrganization.value.name.trim()) {
+      notificationsStore.error('Введите название организации')
+      return
+    }
+    if (!newOrganization.value.slug.trim()) {
+      notificationsStore.error('Введите slug организации')
+      return
+    }
+
+    await organizationsStore.createOrganization(newOrganization.value)
+    notificationsStore.success('Организация успешно создана')
+    showCreateOrgModal.value = false
+    newOrganization.value = {
+      name: '',
+      slug: '',
+      description: ''
+    }
+  } catch (error: any) {
+    notificationsStore.error(error.message || 'Не удалось создать организацию')
+    console.error('Failed to create organization:', error)
   }
 }
 </script>

@@ -71,3 +71,14 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: Optional[str] = None
+
+
+class UserResponseCompact(BaseModel):
+    id: UUID
+    username: str
+    first_name: Optional[str]
+    last_name: Optional[str]
+    avatar_url: Optional[str]
+
+    class Config:
+        from_attributes = True

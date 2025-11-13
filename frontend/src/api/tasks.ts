@@ -51,4 +51,9 @@ export const tasksApi = {
   async deleteTask(id: string): Promise<void> {
     await apiClient.delete(`/tasks/${id}`)
   },
+
+  async getTaskHistory(id: string): Promise<any[]> {
+    const { data } = await apiClient.get(`/tasks/${id}/history`)
+    return data
+  },
 }

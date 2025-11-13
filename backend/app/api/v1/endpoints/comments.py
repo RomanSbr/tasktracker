@@ -7,6 +7,9 @@ from app.api.deps import get_db, get_current_user
 from app.crud.comment import comment as crud_comment
 from app.schemas.comment import CommentCreate, CommentUpdate, CommentResponse
 from app.models.user import User
+from app.models.task import Task
+from app.services.access import ensure_task_access
+from app.services.permissions import require_project_permission
 
 router = APIRouter()
 
@@ -20,6 +23,7 @@ async def get_comments(
     current_user: User = Depends(get_current_user)
 ):
     """Get comments for a task"""
+    await ensure_task_access(db, task_id=task_id, user_id=current_user.id)
     comments = await crud_comment.get_by_task(
         db, task_id=task_id, skip=skip, limit=limit
     )
@@ -33,6 +37,14 @@ async def create_comment(
     current_user: User = Depends(get_current_user)
 ):
     """Create new comment"""
+    task = await ensure_task_access(db, task_id=comment_in.task_id, user_id=current_user.id)
+    
+    await require_project_permission(
+        db,
+        project_id=task.project_id,
+        user_id=current_user.id,
+        permission_key="COMMENT"
+    )
     comment_data = comment_in.model_dump()
     comment_data["user_id"] = current_user.id
 
@@ -56,6 +68,8 @@ async def update_comment(
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
 
+    await ensure_task_access(db, task_id=comment.task_id, user_id=current_user.id)
+
     if comment.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
@@ -77,8 +91,16 @@ async def delete_comment(
     if not comment:
         raise HTTPException(status_code=404, detail="Comment not found")
 
+    task = await ensure_task_access(db, task_id=comment.task_id, user_id=current_user.id)
+
+    # User can delete own comment, or if has DELETE_COMMENT permission
     if comment.user_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not enough permissions")
+        await require_project_permission(
+            db,
+            project_id=task.project_id,
+            user_id=current_user.id,
+            permission_key="DELETE_COMMENT"
+        )
 
     await crud_comment.delete(db, id=comment_id)
     await db.commit()

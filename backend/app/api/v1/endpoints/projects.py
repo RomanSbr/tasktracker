@@ -4,9 +4,16 @@ from typing import List, Optional
 from uuid import UUID
 
 from app.api.deps import get_db, get_current_user
+from sqlalchemy import select
+
 from app.crud.project import project as crud_project
 from app.schemas.project import ProjectCreate, ProjectUpdate, ProjectResponse
 from app.models.user import User
+from app.services.access import ensure_project_access, ensure_org_member
+from app.services.permissions import require_project_permission
+from app.models.workflow import Workflow, WorkflowStatus
+from app.models.permission import PermissionScheme
+from app.schemas.workflow import WorkflowResponse
 
 router = APIRouter()
 
@@ -20,12 +27,13 @@ async def get_projects(
     current_user: User = Depends(get_current_user)
 ):
     """Get projects"""
-    if organization_id:
-        projects = await crud_project.get_by_organization(
-            db, organization_id=organization_id, skip=skip, limit=limit
-        )
-    else:
-        projects = await crud_project.get_multi(db, skip=skip, limit=limit)
+    projects = await crud_project.get_for_user(
+        db,
+        user_id=current_user.id,
+        organization_id=organization_id,
+        skip=skip,
+        limit=limit
+    )
     return projects
 
 
@@ -36,6 +44,13 @@ async def create_project(
     current_user: User = Depends(get_current_user)
 ):
     """Create new project"""
+    await ensure_org_member(
+        db,
+        organization_id=project_in.organization_id,
+        user_id=current_user.id,
+        allowed_roles=["owner", "admin"],
+    )
+
     # Check if project key already exists
     existing = await crud_project.get_by_key(db, key=project_in.key.upper())
     if existing:
@@ -48,6 +63,28 @@ async def create_project(
     project_data = project_in.model_dump()
     project_data["key"] = project_in.key.upper()
     project_data["created_by"] = current_user.id
+    if not project_data.get("lead_id"):
+        project_data["lead_id"] = current_user.id
+
+    if not project_data.get("workflow_id"):
+        workflow = await db.execute(
+            select(Workflow)
+            .where(Workflow.organization_id == project_data["organization_id"])
+            .order_by(Workflow.is_default.desc(), Workflow.created_at.desc())
+        )
+        workflow_obj = workflow.scalars().first()
+        if workflow_obj:
+            project_data["workflow_id"] = workflow_obj.id
+
+    if not project_data.get("permission_scheme_id"):
+        scheme = await db.execute(
+            select(PermissionScheme)
+            .where(PermissionScheme.organization_id == project_data["organization_id"])
+            .order_by(PermissionScheme.created_at.desc())
+        )
+        scheme_obj = scheme.scalars().first()
+        if scheme_obj:
+            project_data["permission_scheme_id"] = scheme_obj.id
 
     from app.schemas.project import ProjectCreate as PC
     project = await crud_project.create(
@@ -57,6 +94,13 @@ async def create_project(
 
     await db.commit()
     await db.refresh(project)
+    await crud_project.add_member(
+        db,
+        project_id=project.id,
+        user_id=current_user.id,
+        role="lead"
+    )
+    await db.commit()
     return project
 
 
@@ -67,9 +111,7 @@ async def get_project(
     current_user: User = Depends(get_current_user)
 ):
     """Get project by ID"""
-    project = await crud_project.get(db, id=project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    project = await ensure_project_access(db, project_id=project_id, user_id=current_user.id)
     return project
 
 
@@ -81,9 +123,13 @@ async def update_project(
     current_user: User = Depends(get_current_user)
 ):
     """Update project"""
-    project = await crud_project.get(db, id=project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    await require_project_permission(
+        db,
+        project_id=project_id,
+        user_id=current_user.id,
+        permission_key="ADMINISTER_PROJECT"
+    )
+    project = await ensure_project_access(db, project_id=project_id, user_id=current_user.id)
 
     project = await crud_project.update(db, db_obj=project, obj_in=project_in)
     await db.commit()
@@ -98,10 +144,41 @@ async def delete_project(
     current_user: User = Depends(get_current_user)
 ):
     """Delete project"""
-    project = await crud_project.get(db, id=project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
+    await require_project_permission(
+        db,
+        project_id=project_id,
+        user_id=current_user.id,
+        permission_key="ADMINISTER_PROJECT"
+    )
+    await ensure_project_access(db, project_id=project_id, user_id=current_user.id)
 
     await crud_project.delete(db, id=project_id)
     await db.commit()
     return None
+
+
+@router.get("/{project_id}/workflow", response_model=WorkflowResponse)
+async def get_project_workflow(
+    project_id: UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Get workflow for project"""
+    project = await ensure_project_access(db, project_id=project_id, user_id=current_user.id)
+    
+    if not project.workflow_id:
+        raise HTTPException(status_code=404, detail="Project has no workflow assigned")
+    
+    workflow = await db.get(Workflow, project.workflow_id)
+    if not workflow:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+    
+    # Load statuses
+    statuses_result = await db.execute(
+        select(WorkflowStatus)
+        .where(WorkflowStatus.workflow_id == workflow.id)
+        .order_by(WorkflowStatus.order.asc())
+    )
+    workflow.statuses = statuses_result.scalars().all()
+    
+    return workflow

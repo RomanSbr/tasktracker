@@ -17,6 +17,7 @@ class Organization(Base):
     logo_url = Column(String(500))
     owner_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     settings = Column(JSONB, default={})
+    default_role = Column(String(50), nullable=False, default="member")
 
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -41,4 +41,9 @@ export const projectsApi = {
   async deleteProject(id: string): Promise<void> {
     await apiClient.delete(`/projects/${id}`)
   },
+
+  async getProjectWorkflow(projectId: string): Promise<any> {
+    const { data } = await apiClient.get(`/projects/${projectId}/workflow`)
+    return data
+  },
 }

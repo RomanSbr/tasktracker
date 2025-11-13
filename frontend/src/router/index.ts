@@ -45,6 +45,12 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
+      path: '/projects/:id/backlog',
+      name: 'project-backlog',
+      component: () => import('@/pages/Backlog.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
       path: '/tasks/:id',
       name: 'task-detail',
       component: () => import('@/pages/TaskDetail.vue'),
@@ -54,7 +60,7 @@ const router = createRouter({
 })
 
 // Navigation guard
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.meta.requiresAuth !== false
 

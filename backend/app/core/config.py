@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
     # CORS
-    CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:5173"]'
+    CORS_ORIGINS: str = '["http://localhost:3000","http://localhost:5173","http://localhost","http://127.0.0.1","http://127.0.0.1:3000","http://127.0.0.1:5173"]'
 
     @property
     def cors_origins_list(self) -> List[str]:
@@ -55,6 +55,13 @@ class Settings(BaseSettings):
     # Pagination
     DEFAULT_PAGE_SIZE: int = 20
     MAX_PAGE_SIZE: int = 100
+
+    # Default admin bootstrap
+    DEFAULT_ADMIN_EMAIL: Optional[str] = "admin@example.com"
+    DEFAULT_ADMIN_USERNAME: Optional[str] = "admin"
+    DEFAULT_ADMIN_PASSWORD: Optional[str] = "Admin123!"
+    DEFAULT_ADMIN_FIRST_NAME: Optional[str] = "Admin"
+    DEFAULT_ADMIN_LAST_NAME: Optional[str] = "User"
 
 
 settings = Settings()

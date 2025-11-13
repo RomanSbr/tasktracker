@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, ForeignKey, String, DateTime
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.sql import func
 
 from app.db.session import Base
@@ -12,6 +12,7 @@ user_organizations = Table(
     Column("organization_id", UUID(as_uuid=True), ForeignKey("organizations.id", ondelete="CASCADE"), primary_key=True),
     Column("role", String(50), nullable=False, default="member"),
     Column("joined_at", DateTime(timezone=True), server_default=func.now()),
+    Column("permissions", JSONB, default={}),
 )
 
 # Project - User association
@@ -22,6 +23,8 @@ project_members = Table(
     Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
     Column("role", String(50), nullable=False, default="member"),
     Column("added_at", DateTime(timezone=True), server_default=func.now()),
+    Column("permissions", JSONB, default={}),
+    Column("added_by", UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL")),
 )
 
 # Task - Watcher association

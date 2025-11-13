@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -32,8 +32,8 @@ class TaskType(str, Enum):
 
 
 class TaskBase(BaseModel):
-    title: str = Field(..., min_length=1, max_length=500)
-    description: Optional[str] = None
+    title: str = Field(..., min_length=1, max_length=500, description="Task title")
+    description: Optional[str] = Field(None, max_length=5000)
     status: TaskStatus = TaskStatus.BACKLOG
     priority: TaskPriority = TaskPriority.MEDIUM
     type: TaskType = TaskType.TASK
@@ -41,9 +41,27 @@ class TaskBase(BaseModel):
     parent_task_id: Optional[UUID] = None
     sprint_id: Optional[UUID] = None
     due_date: Optional[datetime] = None
-    estimated_hours: Optional[float] = Field(None, ge=0)
-    story_points: Optional[int] = Field(None, ge=0)
-    tags: Optional[List[str]] = []
+    estimated_hours: Optional[float] = Field(None, ge=0, le=10000)
+    story_points: Optional[int] = Field(None, ge=0, le=100)
+    tags: Optional[List[str]] = Field(default_factory=list, max_length=20)
+
+    @field_validator('title')
+    @classmethod
+    def validate_title(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError('Task title cannot be empty')
+        return v.strip()
+
+    @field_validator('tags')
+    @classmethod
+    def validate_tags(cls, v: Optional[List[str]]) -> Optional[List[str]]:
+        if v:
+            # Remove duplicates and empty tags
+            cleaned = list(set([tag.strip() for tag in v if tag and tag.strip()]))
+            if len(cleaned) > 20:
+                raise ValueError('Maximum 20 tags allowed')
+            return cleaned
+        return v
 
 
 class TaskCreate(TaskBase):

@@ -4,11 +4,20 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900 antialiased;
+    @apply bg-neutral-50 text-gray-900 antialiased;
   }
 
   * {
     @apply border-gray-200;
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
   }
 }
 
@@ -32,6 +41,10 @@
 
   .btn-outline {
     @apply border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500;
+  }
+
+  .chip {
+    @apply px-3 py-1 rounded-full border border-gray-200 text-gray-600 hover:border-success-400 hover:text-success-600 transition;
   }
 
   /* Inputs */

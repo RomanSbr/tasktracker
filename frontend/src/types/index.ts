@@ -95,3 +95,58 @@ export interface Organization {
   created_at: string
   updated_at?: string
 }
+
+export interface OrganizationMember {
+  user: {
+    id: string
+    username: string
+    first_name?: string
+    last_name?: string
+    avatar_url?: string
+  }
+  role: string
+  permissions: Record<string, string>
+  joined_at: string
+}
+
+export interface WorkflowStatus {
+  id: string
+  key: string
+  name: string
+  order: number
+  category: 'todo' | 'in_progress' | 'done'
+}
+
+export interface Workflow {
+  id: string
+  organization_id: string
+  name: string
+  type: string
+  is_default: boolean
+  statuses: WorkflowStatus[]
+}
+
+export interface Sprint {
+  id: string
+  project_id: string
+  name: string
+  goal?: string
+  status: 'planned' | 'active' | 'completed'
+  sprint_number?: number
+  start_date?: string
+  end_date?: string
+  created_at: string
+  updated_at?: string
+  completed_at?: string
+}
+
+export interface TaskHistory {
+  id: string
+  task_id: string
+  user_id?: string
+  action: string
+  field_name?: string
+  old_value?: string
+  new_value?: string
+  created_at: string
+}

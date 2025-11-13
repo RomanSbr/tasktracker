@@ -50,10 +50,17 @@ def get_password_hash(password: str) -> str:
     return hashed.decode('utf-8')
 
 
-def decode_token(token: str) -> dict:
-    """Decode and verify JWT token"""
+def decode_token(token: str, *, expected_type: Optional[str] = None) -> dict:
+    """Decode and verify JWT token."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        token_type = payload.get("type")
+        if expected_type and token_type != expected_type:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token type",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         return payload
     except JWTError:
         raise HTTPException(

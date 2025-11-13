@@ -1,7 +1,9 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Dict
 from datetime import datetime
 from uuid import UUID
+
+from app.schemas.user import UserResponseCompact
 
 
 class OrganizationBase(BaseModel):
@@ -29,3 +31,16 @@ class OrganizationResponse(OrganizationBase):
 
     class Config:
         from_attributes = True
+
+
+class OrganizationMemberResponse(BaseModel):
+    user: UserResponseCompact
+    role: str
+    permissions: Dict[str, str] | dict
+    joined_at: datetime
+
+
+class OrganizationMemberAdd(BaseModel):
+    user_id: UUID
+    role: str = "member"
+    permissions: Optional[dict] = None
